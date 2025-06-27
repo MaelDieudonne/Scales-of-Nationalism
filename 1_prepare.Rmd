@@ -1,14 +1,11 @@
 
 ```{r setup}
 source("dependencies.R")
-```
 
-```{r}
 data2004 <- read_dta("data/source/GSS2004.dta")
-```
+# stata <- read.csv("data/2004 GSS LatentGold Input.csv")
 
-```{r}
-approach <- 'own'
+approach <- 'replic'
 ```
 
 # Recodages
@@ -26,12 +23,16 @@ Une difficulté est que les variables retournées par haven sont mixtes : numér
 ```{r}
 if (approach == 'replic') {
   mods <- c(1, 2, NA_real_, 3, 4)
+  mods_q4 <- c(1:5, NA_real_)
   lbls <- c('Not at all', 'Not very much', 'Somewhat / fairly', 'Very much')
+  lbls_q4 <- c('Not at all', 'Not very much', 'Neutral', 'Somewhat / fairly', 'Very much')
 }
 
 if (approach == 'own') {
   mods <- c(-2:2)
+  mods_q4 <- c(-2:2, 0)
   lbls <- c('Not at all', 'Not very much', 'Can\'t choose', 'Somewhat / fairly', 'Very much')
+  lbls_q4 <- c(lbls, 'Can\'t choose')
 }
 ```
 
@@ -201,18 +202,18 @@ data2004 <- data2004 %>%
   )) %>%
   mutate(across(all_of(q4_vars), 
                 ~ case_when(
-                  . == 'STRONGLY AGREE' ~ mods[5],
-                  . == 'agree' ~ mods[4],
-                  . == 'NEITHER AGREE NOR DISAGREE' ~ mods[3],
-                  . == 'disagree' ~ mods[2],
-                  . == 'STRONGLY DISAGREE' ~ mods[1],
-                  . == 'CANT CHOOSE' ~ mods[3],
+                  . == 'STRONGLY AGREE' ~ mods_q4[5],
+                  . == 'agree' ~ mods_q4[4],
+                  . == 'NEITHER AGREE NOR DISAGREE' ~ mods_q4[3],
+                  . == 'disagree' ~ mods_q4[2],
+                  . == 'STRONGLY DISAGREE' ~ mods_q4[1],
+                  . == 'CANT CHOOSE' ~ mods_q4[6],
                   TRUE ~ NA_real_),
                 .names = '{.col}_n')) %>%
   mutate(across(all_of(q4_vars_n), 
                 ~ factor(.,
-                         levels = mods,
-                         labels = lbls),
+                         levels = mods_q4,
+                         labels = lbls_q4),
                 .names = "{stringr::str_replace(.col, '_n$', '')}_f"))
 
 data2004 <- data2004 %>%
@@ -402,42 +403,46 @@ data2004 <- data2004 %>%
 data2004 <- data2004 %>%
   mutate(reltrad_f = factor(
     case_when(
-      # Mainline Protestant
-      denom %in% c(12, 13, 14, 15, 20, 21, 23) |
-        (denom %in% c(10, 11, 18, 28) & race == 2) |
+      # Black Protestant
+      denom %in% c(12, 13, 20, 21) |
+        (denom %in% c(10, 11, 14, 15, 18, 23, 28) & race == 2) |
         other %in% c(7, 14, 15, 21, 37, 38, 56, 78, 79, 85, 86, 87, 88, 98, 103, 104, 128, 133) |
-        (other == 93 & race == 2) ~ 1,
+        (other == 93 & race == 2) ~ 3,
       # Evangelical Protestant
-      denom %in% c(32, 33, 34, 42) |
-        (denom %in% c(10, 14, 15, 18, 23, 93) & race != 2) |
+      (denom %in% c(10, 14, 15, 18, 23) & race != 2) |
+        denom %in% c(32, 33, 34, 42) |
         other %in% c(2, 3, 5, 6, 9, 10, 12, 13, 16, 18, 20, 22, 24, 26, 27,
-                     28, 29, 31, 32, 34, 35, 36, 41, 42, 43, 45, 47, 51, 52,
-                     53, 55, 57, 63, 65, 66, 67, 68, 69, 76, 83, 84, 90, 91,
+                     28, 29, 31, 32, 34, 35, 36, 39, 41, 42, 43, 45, 47, 51, 52,
+                     53, 55, 57, 63, 65, 66, 67, 68, 69, 76, 77, 83, 84, 90, 91,
                      92, 94, 97, 100, 101, 102, 106, 107, 108, 109, 110, 111,
                      112, 115, 116, 117, 118, 120, 121, 122, 124, 125, 127,
                      129, 131, 132, 133, 134, 135, 138, 139, 140, 146) |
+        (other == 93 & race != 2) |
         (denom == 70 & attend >= 4 & attend != 9) ~ 2,
-      # Black Protestant
-      denom %in% c(22, 30, 31, 35, 38, 40, 41, 43, 48, 50) |
-        (denom %in% c(11, 28) & race != 2) |
+      # Mainline Protestant
+      (denom %in% c(11, 28) & race != 2) |
+        denom %in% c(22, 30, 31, 35, 38, 40, 41, 43, 48, 50) |
         other %in% c(1, 8, 19, 23, 25, 40, 44, 46, 48, 49, 50, 54, 
-                     70, 71,72, 73, 81, 89, 96, 99, 105, 119, 148) ~ 3,
+                     70, 71, 72, 73, 81, 89, 96, 99, 105, 119, 148) ~ 1,
       # Other
       other %in% c(11, 17, 29, 30, 33, 58, 59, 60, 61, 62, 64, 74,
-                   75, 80, 82, 95, 113, 114, 130, 136, 141, 145) ~ 6,
+                   75, 80, 82, 95, 113, 114, 130, 136, 141, 145) ~ 7,
       # Catholic
       relig == 2 | other == 123 ~ 4,
       # Jewish
       relig == 3 ~ 5,
       # None
-      relig == 4 ~ 0,
+      relig == 4 ~ 6,
       # Other
-      TRUE ~ 6),
-    levels = 0:6, 
-    labels = c('No religion', 'Mainline Protestant', 'Evangelical Protestant', 
-               'Black Protestant', 'Catholic', 'Jewish', 'Other religion'))) %>%
+      relig == 5 ~ 7,
+      TRUE ~ 7),
+    levels = 1:7, 
+    labels = c('Mainline Protestant', 'Evangelical Protestant', 'Black Protestant',
+               'Catholic', 'Jewish', 'No religion', 'Other religion'))) %>%
   set_variable_labels(reltrad_f = 'Religion')
+```
 
+```{r}
 data2004 <- data2004 %>%
   mutate(religstr_f = factor(
     case_when(
@@ -471,34 +476,19 @@ data2004 <- data2004 %>%
 ### Identification partisane
 
 ```{r}
-if (approach == 'replic') {
-  data2004 <- data2004 %>%
-    mutate(party_f = factor(
-      case_when(
-        partyid == 0 ~ 1,
-        partyid %in% c(1, 2) ~ 2,
-        partyid == 3 ~ 3,
-        partyid %in% c(4, 5) ~ 4,
-        partyid == 6 ~ 5,
-        partyid == 7 ~ 6,
-        TRUE ~ NA_real_),
-      levels = 1:6,
-      labels = c("Strong Democrat", "Democrat", "Independent", "Republican", "Strong Republican", "Other party"))) %>%
-    set_variable_labels(party_f = "Partishanship")
-}
-
-if (approach == 'own') {
-  data2004 <- data2004 %>%
-    mutate(party_f = factor(
-      case_when(
-        partyid %in% c(0:2) ~ 1,
-        partyid %in% c(3,7) ~ 0,
-        partyid %in% c(4:6) ~ -1,
-        TRUE ~ NA_real_),
-      levels = -1:1,
-      labels = c("Republican", "Independent", "Democrat"))) %>%
-    set_variable_labels(party_f = "Partishanship")
-}
+data2004 <- data2004 %>%
+  mutate(party_f = factor(
+    case_when(
+      partyid == 0 ~ 1,
+      partyid %in% c(1, 2) ~ 2,
+      partyid == 3 ~ 3,
+      partyid %in% c(4, 5) ~ 4,
+      partyid == 6 ~ 5,
+      partyid == 7 ~ NA_real_,
+      TRUE ~ NA_real_),
+    levels = 1:5,
+    labels = c("Strong Democrat", "Democrat", "Independent", "Republican", "Strong Republican"))) %>%
+  set_variable_labels(party_f = "Partishanship")
 ```
 
 ### Lieu de naissance
@@ -545,7 +535,7 @@ f_controls <- c('sex_f', 'age_f', 'race_f', 'educ_f', 'born_usa_f', 'realinc2004
 n_controls <- c('age_n', 'educ_n', 'realinc2004_n', 'lnrealinc2004_n')
 all_controls <- c(f_controls, n_controls)
 
-all_vars <-c (all_outcomes, all_controls, 'wgt', 'id')
+all_vars <-c ('id', 'wgt', all_outcomes, all_controls)
 ```
 
 On élimine les enquêtés auxquels le module Identité nationale n'a pas été administré, plus un ayant répondu à seulement deux questions. On élimine aussi les variables non-utilisées.
@@ -557,7 +547,7 @@ data2004_recoded <- data2004 %>%
 ```
 
 On étudie les NAs pour les outcomes : 
-- Avec le recodage des auteurs, les NAs sont conséquentes : 1928 en tout, affectant 828 individus (avec une moyenne de 1,6 NA par individu) et représentant jusqu'à 20-30 % des données pour certaines variables.
+- Avec le recodage des auteurs, les NAs sont conséquentes.
 - Avec notre recodage, les NAs sont résiduelles : entre 1 et 3 par outcome. La majorité proviennent d'un enquêté ayant répondu à seulement 2 questions, seulement 8 NAs affectant 7 variables demeurent lorsqu'on l'élimine.
 
 ```{r}
@@ -615,7 +605,7 @@ if (approach == 'own') {
 nrow(data2004_final)
 ```
 
-```{r eval=FALSE, include=FALSE}
+```{r}
 write_parquet(data2004_final, paste0("data/data2004_", approach, ".parquet"))
 write.csv(data2004_final, paste0("data/data2004_", approach, ".csv"))
 
