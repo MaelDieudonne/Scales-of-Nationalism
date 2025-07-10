@@ -1,9 +1,7 @@
-
 ```{r setup}
 source("dependencies.R")
 
 data2004 <- read_dta("data/source/GSS2004.dta")
-# stata <- read.csv("data/2004 GSS LatentGold Input.csv")
 
 approach <- 'replic'
 ```
@@ -54,7 +52,7 @@ B&D retiennent n'utilisent pas les items a (clsetown), b (clsestat) et d (clseno
 
 ```{r}
 q2_vars <- c('clseusa')
-if (approach == 'own') {q2_vars <- c(q2_vars, 'clsetown', 'clsestat', 'clsenoam')}
+# if (approach == 'own') {q2_vars <- c(q2_vars, 'clsetown', 'clsestat', 'clsenoam')}
 q2_vars_n <- paste0(q2_vars, "_n")
 
 data2004 <- data2004 %>%
@@ -81,17 +79,16 @@ data2004 <- data2004 %>%
   set_variable_labels(
     clseusa_f = 'How close ... America')
 
-if (approach == 'own') {
-  data2004 <- data2004 %>%
-    set_variable_labels(
-      clsetown_n = 'How close ... your town or city',
-      clsestat_n = 'How close ... your state',
-      clsenoam_n = 'How close ... North America') %>%
-    set_variable_labels(
-      clsetown_f = 'How close ... your town or city',
-      clsestat_f = 'How close ... your state',
-      clsenoam_f = 'How close ... North America')
-}
+# if (approach == 'own') {
+#   data2004 <- data2004 %>%
+#     set_variable_labels(
+#       clsetown_n = 'How close ... your town or city',
+#       clsestat_n = 'How close ... your state',
+#       clsenoam_n = 'How close ... North America') %>%
+#     set_variable_labels(
+#       clsetown_f = 'How close ... your town or city',
+#       clsestat_f = 'How close ... your state',
+#       clsenoam_f = 'How close ... North America')}
 ```
 
 ### Q.3
@@ -110,9 +107,9 @@ e.  To be a Christian
 
 f.  To respect America's political institutions and laws
 
-g.  To feel American 
+g.  To feel American
 
-h. To have American ancestry
+h.  To have American ancestry
 
 Modalités : Not important at all / Not very important / Can't choose / Fairly important / Very important
 
@@ -120,7 +117,7 @@ B&D n'utilisent pas l'item h (amancstr).
 
 ```{r}
 q3_vars <- c('ambornin', 'amcit', 'amlived', 'amenglsh', 'amchrstn', 'amgovt', 'amfeel')
-if (approach == 'own') {q3_vars <- c(q3_vars, 'amancstr')}
+# if (approach == 'own') {q3_vars <- c(q3_vars, 'amancstr')}
 q3_vars_n <- paste0(q3_vars, "_n")
 
 data2004 <- data2004 %>%
@@ -160,13 +157,12 @@ data2004 <- data2004 %>%
     amgovt_f = 'How important ... to respect America\'s political institutions and laws',
     amfeel_f = 'How important ... to feel American')
 
-if (approach == 'own') {
-  data2004 <- data2004 %>%
-    set_variable_labels(
-      amancstr_n = 'How important ... to have American ancestry') %>%
-    set_variable_labels(
-      amancstr_f = 'How important ... to have American ancestry')
-}
+# if (approach == 'own') {
+#   data2004 <- data2004 %>%
+#     set_variable_labels(
+#       amancstr_n = 'How important ... to have American ancestry') %>%
+#     set_variable_labels(
+#       amancstr_f = 'How important ... to have American ancestry')}
 ```
 
 ### Q.4
@@ -193,7 +189,7 @@ B&D n'utilisent pas les items f (amsports) et g (lessprd).
 
 ```{r}
 q4_vars <- c('amcitizn', 'amshamed', 'belikeus', 'ambetter', 'ifwrong')
-if (approach == 'own') {q4_vars <- c(q4_vars, 'amsports', 'lessprd')}
+# if (approach == 'own') {q4_vars <- c(q4_vars, 'amsports', 'lessprd')}
 q4_vars_n <- paste0(q4_vars, "_n")
 
 data2004 <- data2004 %>%
@@ -216,6 +212,18 @@ data2004 <- data2004 %>%
                          labels = lbls_q4),
                 .names = "{stringr::str_replace(.col, '_n$', '')}_f"))
 
+# Reverse order for amshamed
+if (approach == 'replic') {
+  data2004 <- data2004 %>%
+    mutate(amshamed_n = 6 - amshamed_n)}
+
+if (approach == 'own') {
+  data2004 <- data2004 %>%
+    mutate(amshamed_n = -amshamed_n)}
+
+data2004 <- data2004 %>%
+  mutate(amshamed_f = factor(amshamed_f, levels = rev(levels(amshamed_f))))
+
 data2004 <- data2004 %>%
   set_variable_labels(
     amcitizn_n = 'I would rather be a citizen of America than of any other country in the world',
@@ -230,15 +238,14 @@ data2004 <- data2004 %>%
     ifwrong_f = 'People should support their country even if their country is in the wrong',
     amshamed_f = 'There are some things about America today that make me feel ashamed of America')
 
-if (approach == 'own') {
-  data2004 <- data2004 %>%
-    set_variable_labels(
-      amsports_n = 'When my country does well in international sports, it makes me proud to be American',
-      lessprd_n = 'I am often less proud of America than I would like to be') %>%
-    set_variable_labels(
-      amsports_f = 'When my country does well in international sports, it makes me proud to be American',
-      lessprd_f = 'I am often less proud of America than I would like to be')
-}
+# if (approach == 'own') {
+#   data2004 <- data2004 %>%
+#     set_variable_labels(
+#       amsports_n = 'When my country does well in international sports, it makes me proud to be American',
+#       lessprd_n = 'I am often less proud of America than I would like to be') %>%
+#     set_variable_labels(
+#       amsports_f = 'When my country does well in international sports, it makes me proud to be American',
+#       lessprd_f = 'I am often less proud of America than I would like to be')}
 ```
 
 ### Q.5
@@ -546,9 +553,11 @@ data2004_recoded <- data2004 %>%
   select(all_of(all_vars))
 ```
 
-On étudie les NAs pour les outcomes : 
-- Avec le recodage des auteurs, les NAs sont conséquentes.
-- Avec notre recodage, les NAs sont résiduelles : entre 1 et 3 par outcome. La majorité proviennent d'un enquêté ayant répondu à seulement 2 questions, seulement 8 NAs affectant 7 variables demeurent lorsqu'on l'élimine.
+On étudie les NAs pour les outcomes :
+
+-   Avec le recodage des auteurs, les NAs sont conséquentes.
+
+-   Avec notre recodage, les NAs sont résiduelles : entre 1 et 3 par outcome. La majorité proviennent d'un enquêté ayant répondu à seulement 2 questions, seulement 8 NAs affectant 7 variables demeurent lorsqu'on l'élimine.
 
 ```{r}
 data2004_recoded %>%
@@ -580,36 +589,45 @@ data2004_recoded %>%
 ```
 
 Données finales
-- B&D éliminent les individus avec plus de 10 NAs pour les outcomes, et au moins 1 NA pour les contrôles.
-- Nous : on élimine l'individu avec seulement 2 réponse pour les outcomes, et on impute les valeurs manquantes par kNN
+
+-   B&D construisent 2 datasets
+    -   L'un en éliminant les individus avec des valeurs manquantes pour les outcomes ou les contrôles =\> $n=830$
+    -   L'autre en éliminant les individus avec plus de 10 NAs pour les outcomes, et au moins 1 NA pour les contrôles =\> $n=1077$
+    -   Suppriment aussi 3 individus dont la religion est mal codée.
+-   Nous éliminons l'individu avec seulement 2 réponses pour les outcomes, et imputons les valeurs manquantes par kNN =\> $n=1215$
 
 ```{r}
 if (approach == 'replic') {
-  data2004_final_ni <- data2004_recoded %>%
+  data2004_1077_ni <- data2004_recoded %>%
     filter(rowSums(is.na(select(., all_of(f_outcomes)))) < 10) %>%
-    filter(rowSums(is.na(select(., all_of(all_controls)))) == 0)
-  data2004_final <- data2004_final_ni %>% 
-    kNN(k=5, imp_var = FALSE)
+    filter(rowSums(is.na(select(., all_of(all_controls)))) == 0) %>%
+    filter(!(id %in% c(769, 1523, 2581, 2745)))
+  data2004_1077 <- data2004_1077_ni %>% 
+    kNN(k=3, imp_var = FALSE)
+  print(nrow(data2004_1077))
+  
+  write_parquet(data2004_1077_ni, paste0("data/data2004_1077_ni.parquet"))
+  write_parquet(data2004_1077, paste0("data/data2004_1077.parquet"))
+  
+  data2004_830_ni <- data2004_recoded %>%
+    filter(rowSums(is.na(select(., all_of(f_outcomes)))) == 0) %>%
+    filter(rowSums(is.na(select(., all_of(all_controls)))) == 0) %>%
+    filter(!(id %in% c(769, 1523, 2581, 2745)))
+  data2004_830 <- data2004_830_ni %>% 
+    kNN(k=3, imp_var = FALSE)
+  print(nrow(data2004_830))
+
+  write_parquet(data2004_830_ni, paste0("data/data2004_830_ni.parquet"))
+  write_parquet(data2004_830, paste0("data/data2004_830.parquet"))  
 }
 ```
 
 ```{r}
 if (approach == 'own') {
-  data2004_final <- data2004_recoded %>%
+  data2004_1215 <- data2004_recoded %>%
   filter(id != 769) %>% 
-  kNN(k=5, imp_var = FALSE)
+  kNN(k=3, imp_var = FALSE)
+  
+  write_parquet(data2004_1215, paste0("data/data2004_1215.parquet"))
 }
-```
-
-```{r}
-nrow(data2004_final)
-```
-
-```{r}
-write_parquet(data2004_final, paste0("data/data2004_", approach, ".parquet"))
-write.csv(data2004_final, paste0("data/data2004_", approach, ".csv"))
-
-if (approach == 'replic') {
-  write_parquet(data2004_final_ni, "data/data2004_replic_ni.parquet")
-  write.csv(data2004_final_ni, "data/data2004_replic_ni.csv")}
 ```
