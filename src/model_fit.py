@@ -56,7 +56,9 @@ def do_StepMix(data, controls, n, msrt, covar, weights = None, refit = False):
         return pred_clust
 
     else:
-        mod_df = latent_mod.n_parameters
+        unique_patterns = data.drop_duplicates().shape[0]
+        mod_params = latent_mod.n_parameters
+        df = unique_patterns - mod_params
         
         # Extract model coefficients
         coeffs = latent_mod.get_parameters_df()
@@ -83,7 +85,7 @@ def do_StepMix(data, controls, n, msrt, covar, weights = None, refit = False):
             sabic = latent_mod.sabic(data, controls),
             relative_entropy = latent_mod.relative_entropy(data, controls),
             classif_error = classif_error,
-            df = mod_df,
+            df = df,
             LL = latent_mod.score(data, controls))
 
 

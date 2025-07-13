@@ -3,7 +3,7 @@ source("dependencies.R")
 
 data2004 <- read_dta("data/source/GSS2004.dta")
 
-approach <- 'replic'
+approach <- 'own'
 ```
 
 # Recodages
@@ -27,8 +27,8 @@ if (approach == 'replic') {
 }
 
 if (approach == 'own') {
-  mods <- c(-2:2)
-  mods_q4 <- c(-2:2, 0)
+  mods <- c(1:5)
+  mods_q4 <- c(1:5, 3)
   lbls <- c('Not at all', 'Not very much', 'Can\'t choose', 'Somewhat / fairly', 'Very much')
   lbls_q4 <- c(lbls, 'Can\'t choose')
 }
