@@ -213,13 +213,8 @@ data2004 <- data2004 %>%
                 .names = "{stringr::str_replace(.col, '_n$', '')}_f"))
 
 # Reverse order for amshamed
-if (approach == 'replic') {
-  data2004 <- data2004 %>%
-    mutate(amshamed_n = 6 - amshamed_n)}
-
-if (approach == 'own') {
-  data2004 <- data2004 %>%
-    mutate(amshamed_n = -amshamed_n)}
+data2004 <- data2004 %>%
+    mutate(amshamed_n = 6 - amshamed_n)
 
 data2004 <- data2004 %>%
   mutate(amshamed_f = factor(amshamed_f, levels = rev(levels(amshamed_f))))

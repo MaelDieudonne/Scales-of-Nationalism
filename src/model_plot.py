@@ -170,9 +170,9 @@ def plot_cluster_profiles(
         
         # Plot standard deviation boxes
         for j in range(n_features):
-            # Clamp values to [-2, 2] range
-            lower = max(-2, centroids[i][j] - std_devs[i][j]*sd/2)
-            upper = min(2, centroids[i][j] + std_devs[i][j]*sd/2)
+            # Clamp values to the values range
+            lower = max(1, centroids[i][j] - std_devs[i][j]*sd/2)
+            upper = min(5, centroids[i][j] + std_devs[i][j]*sd/2)
             height = upper - lower
 
             rect = plt.Rectangle((x_pos[j] - width/2, lower),
